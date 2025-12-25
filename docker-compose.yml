@@ -1,0 +1,65 @@
+﻿version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: xplorakodo_db
+    environment:
+      POSTGRES_DB: xplorekodo2
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-your_secure_password_here}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - xplorakodo_network
+
+  # FastAPI Backend
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: xplorakodo_backend
+    environment:
+      DATABASE_URL: postgresql://postgres:${DB_PASSWORD:-your_secure_password_here}@postgres:5432/xplorekodo2
+      SECRET_KEY: ${SECRET_KEY:-your_secret_key_change_in_production}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-sk_test_your_stripe_key}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-sk_your_openai_key}
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
+    networks:
+      - xplorakodo_network
+    restart: unless-stopped
+
+  # Redis (for caching and sessions)
+  redis:
+    image: redis:7-alpine
+    container_name: xplorakodo_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - xplorakodo_network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  xplorakodo_network:
+    driver: bridge

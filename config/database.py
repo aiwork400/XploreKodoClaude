@@ -1,0 +1,40 @@
+﻿"""
+Database Configuration
+SQLAlchemy setup for PostgreSQL
+"""
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
+# Get database URL from environment with fallback
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "postgresql://postgres:Arm!ta1390@localhost:5432/xplorekodo2"
+)
+
+if not DATABASE_URL:
+    raise ValueError("DATABASE_URL environment variable is not set!")
+
+print(f"Connecting to database: {DATABASE_URL.split('@')[1] if '@' in DATABASE_URL else 'unknown'}")
+
+# Create SQLAlchemy engine
+engine = create_engine(DATABASE_URL, echo=False)
+
+# Create SessionLocal class
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+# Create Base class for models
+Base = declarative_base()
+
+# Dependency to get database session
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
