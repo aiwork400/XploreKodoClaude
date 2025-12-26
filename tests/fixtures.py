@@ -18,13 +18,18 @@ from db_models.i18n import LanguageDB
 
 @pytest.fixture
 def test_user(test_db):
-    """Create a test user"""
+    """Create a test user with unique ID and email"""
+    import uuid
+    unique_id = str(uuid.uuid4())[:8]
     user = UserDB(
-        user_id="user_001",
-        email="test@example.com",
-        password_hash="$2b$12$test_hash",
-        full_name="Test User",
+        user_id=f"user_{unique_id}",
+        email=f"test_{unique_id}@example.com",
+        hashed_password="$2b$12$test_hash",
         role="student",
+        preferred_language="en",
+        widget_voice_enabled=False,
+        widget_avatar_enabled=False,
+        widget_auto_language=True,
         created_at=datetime.utcnow()
     )
     test_db.add(user)

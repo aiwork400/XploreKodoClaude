@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.cors import CORSMiddleware
 from api.auth import router as auth_router
 from api.lessons import router as lessons_router
 from api.progress import router as progress_router
@@ -12,6 +12,10 @@ from api.certificates import router as certificates_router
 from api.dashboard import router as dashboard_router
 from api.japanese_training import router as japanese_training_router
 from api.aiml_training import router as aiml_training_router
+from api.coaching.wallet import router as wallet_router
+from api.coaching.voice_coach import router as voice_coach_router
+from api.coaching.video import router as video_router
+from api.coaching.assessment import router as assessment_router
 
 app = FastAPI(
     title="XploraKodo API",
@@ -65,6 +69,10 @@ app.include_router(japanese_training_router)
 app.include_router(aiml_training_router)
 app.include_router(i18n_router)
 app.include_router(ai_widget_router)
+app.include_router(wallet_router)
+app.include_router(voice_coach_router)
+app.include_router(video_router)
+app.include_router(assessment_router)
 
 @app.get("/health", tags=["Health"])
 async def health_check():

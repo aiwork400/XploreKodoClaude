@@ -13,13 +13,17 @@ from db_models.japanese_training import JapaneseCourseDB
 
 @pytest.fixture
 def test_user(test_db):
-    """Create test user 'user_001' that many tests expect"""
+    """Create test user with unique ID and email"""
+    unique_id = str(uuid.uuid4())[:8]
     user = UserDB(
-        user_id="user_001",
-        email="testuser@example.com",
-        password_hash="$2b$12$test_hash_here",
-        full_name="Test User",
+        user_id=f"user_{unique_id}",
+        email=f"testuser_{unique_id}@example.com",
+        hashed_password="$2b$12$test_hash_here",
         role="student",
+        preferred_language="en",
+        widget_voice_enabled=False,
+        widget_avatar_enabled=False,
+        widget_auto_language=True,
         created_at=datetime.utcnow()
     )
     test_db.add(user)
@@ -30,17 +34,20 @@ def test_user(test_db):
 
 @pytest.fixture(autouse=True)
 def ensure_test_user(test_db):
-    """Auto-create user_001 for all tests that need it"""
+    """Auto-create user_001 for all tests that need it (if not exists)"""
     # Check if user exists
-    from db_models.user import UserDB
+    from db_models.user import UserDB, UserRole
     existing = test_db.query(UserDB).filter(UserDB.user_id == "user_001").first()
     if not existing:
         user = UserDB(
             user_id="user_001",
-            email="testuser@example.com",
-            password_hash="$2b$12$test_hash",
-            full_name="Test User",
-            role="student",
+            email="testuser_001@example.com",
+            hashed_password="$2b$12$test_hash",
+            role=UserRole.student,
+            preferred_language="en",
+            widget_voice_enabled=False,
+            widget_avatar_enabled=False,
+            widget_auto_language=True,
             created_at=datetime.utcnow()
         )
         test_db.add(user)
